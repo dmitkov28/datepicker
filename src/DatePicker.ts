@@ -7,6 +7,7 @@ class DatePicker extends HTMLElement {
   private currentYear: number;
   private dateInput: HTMLInputElement | null = null;
   private calendarContainer: HTMLDivElement | null = null;
+  private hiddenInput: HTMLInputElement | null = null;
 
   constructor() {
     super();
@@ -38,7 +39,7 @@ class DatePicker extends HTMLElement {
     return ["value", "min", "max", "disabled", "name"];
   }
 
-  attributeChangedCallback(name: string, newValue: string) {
+  attributeChangedCallback(name: string, oldValue: string, newValue: string) {
     if (name === "value" && newValue) {
       const date = new Date(newValue);
       if (!isNaN(date.getTime())) {
@@ -51,6 +52,10 @@ class DatePicker extends HTMLElement {
 
     if (name === "disabled") {
       this.updateUI();
+    }
+
+    if (name === "name" && this.hiddenInput) {
+      this.hiddenInput.name = newValue;
     }
   }
 
@@ -157,6 +162,9 @@ class DatePicker extends HTMLElement {
         if (this.dateInput) {
           this.dateInput.value = this.formatDate(this.selectedDate);
         }
+        if (this.hiddenInput) {
+          this.hiddenInput.value = this.formatDate(this.selectedDate);
+        }
         this.dispatchEvent(
           new CustomEvent("change", {
             detail: { date: this.selectedDate },
@@ -207,7 +215,6 @@ class DatePicker extends HTMLElement {
         target !== this.dateInput &&
         !target.classList.contains("month-nav")
       ) {
-        console.log(this.calendarContainer);
         this.calendarContainer.style.display = "none";
       }
     });
@@ -227,6 +234,12 @@ class DatePicker extends HTMLElement {
       } else {
         this.dateInput.removeAttribute("disabled");
       }
+    }
+
+    if (this.hiddenInput) {
+      this.hiddenInput.value = this.selectedDate
+        ? this.formatDate(this.selectedDate)
+        : "";
     }
   }
 
@@ -346,6 +359,14 @@ class DatePicker extends HTMLElement {
 
     this.shadow.appendChild(styles);
     this.shadow.appendChild(container);
+
+    this.hiddenInput = document.createElement("input");
+    this.hiddenInput.type = "hidden";
+    this.hiddenInput.name = this.getAttribute("name") || "";
+    this.hiddenInput.value = this.selectedDate
+      ? this.formatDate(this.selectedDate)
+      : "";
+    this.appendChild(this.hiddenInput);
   }
 
   public getValue(): string {
