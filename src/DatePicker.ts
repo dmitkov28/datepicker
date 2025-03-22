@@ -39,7 +39,7 @@ class DatePicker extends HTMLElement {
     return ["value", "min", "max", "disabled", "name"];
   }
 
-  attributeChangedCallback(name: string, oldValue: string, newValue: string) {
+  attributeChangedCallback(name: string, newValue: string) {
     if (name === "value" && newValue) {
       const date = new Date(newValue);
       if (!isNaN(date.getTime())) {
